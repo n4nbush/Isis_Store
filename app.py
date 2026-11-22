@@ -112,7 +112,8 @@ def validate_csrf():
     if request.method == "POST":
         if request.form.get("csrf_token") != session.get("csrf_token"):
             flash("La sesión expiró. Intentá nuevamente.", "error")
-            return redirect(request.referrer or url_for("login"))
+            destination = "home" if "user_id" in session else "login"
+            return redirect(url_for(destination))
     return None
 
 
@@ -321,4 +322,4 @@ def dashboard():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=False)
