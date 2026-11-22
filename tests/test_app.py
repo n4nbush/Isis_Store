@@ -18,12 +18,12 @@ class IsisStoreTestCase(unittest.TestCase):
         os.close(self.db_fd)
         os.unlink(self.db_path)
 
-    def login(self, username="admin", ******):
+    def login(self, username="admin", passwd="admin"):
         with self.client.session_transaction() as session:
             session["csrf_token"] = "test-token"
         return self.client.post(
             "/login",
-            data={"username": username, "password": password, "csrf_token": "test-token"},
+            data={"username": username, "password": passwd, "csrf_token": "test-token"},
         )
 
     def test_login_and_home(self):
