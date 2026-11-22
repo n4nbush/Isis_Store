@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Inicio | Isis Store{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Bienvenida</p>
+    <h1>Hola, {{ session.username }}</h1>
+  </div>
+</header>
+<section class="stat-grid">
+  <article class="stat-card"><span>Productos</span><strong>{{ product_count }}</strong></article>
+  <article class="stat-card"><span>Prendas en stock</span><strong>{{ stock_count }}</strong></article>
+  <article class="stat-card"><span>Ventas de hoy</span><strong>${{ "%.2f"|format(today_sales) }}</strong></article>
+</section>
+<section class="actions">
+  <a class="action-card" href="{{ url_for('new_sale') }}"><span>01</span><div><h2>Registrar venta</h2><p>Descontar prendas del stock</p></div></a>
+  {% if session.role == 'admin' %}
+  <a class="action-card" href="{{ url_for('new_product') }}"><span>02</span><div><h2>Cargar productos</h2><p>Agregar prendas al catálogo</p></div></a>
+  {% endif %}
+  <a class="action-card" href="{{ url_for('dashboard') }}"><span>03</span><div><h2>Ver dashboard</h2><p>Ganancias y prendas más vendidas</p></div></a>
+</section>
+{% endblock %}

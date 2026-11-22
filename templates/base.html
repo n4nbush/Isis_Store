@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Isis Store{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  {% if session.user_id %}
+  <nav class="navbar">
+    <a class="brand" href="{{ url_for('home') }}">Isis Store</a>
+    <div class="nav-links">
+      <a href="{{ url_for('home') }}">Inicio</a>
+      <a href="{{ url_for('products') }}">Stock</a>
+      <a href="{{ url_for('new_sale') }}">Nueva venta</a>
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <form action="{{ url_for('logout') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="link-button" type="submit">Salir</button>
+      </form>
+    </div>
+  </nav>
+  {% endif %}
+  <main class="container">
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+      <div class="alert {{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
