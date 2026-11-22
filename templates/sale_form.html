@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Nueva venta | Isis Store{% endblock %}
+{% block content %}
+<section class="form-card">
+  <header><p class="eyebrow">Ventas</p><h1>Registrar venta</h1></header>
+  {% if products %}
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Prenda
+      <select name="product_id" required>
+        <option value="">Seleccionar...</option>
+        {% for product in products %}
+        <option value="{{ product.id }}">{{ product.name }} — Stock: {{ product.stock }} — ${{ "%.2f"|format(product.sale_price) }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Cantidad
+      <input type="number" name="quantity" min="1" step="1" value="1" required>
+    </label>
+    <div class="form-actions">
+      <a class="button secondary" href="{{ url_for('home') }}">Cancelar</a>
+      <button type="submit">Registrar venta</button>
+    </div>
+  </form>
+  {% else %}
+  <p class="empty">No hay productos con stock disponible.</p>
+  {% endif %}
+</section>
+{% endblock %}

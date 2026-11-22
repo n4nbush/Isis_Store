@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Ingresar | Isis Store{% endblock %}
+{% block content %}
+<section class="login-card">
+  <div>
+    <p class="eyebrow">Panel de gestión</p>
+    <h1>Isis Store</h1>
+  </div>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Usuario
+      <input name="username" autocomplete="username" required autofocus>
+    </label>
+    <label>Contraseña
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <button type="submit">Iniciar sesión</button>
+  </form>
+  <p class="login-help">Usuario inicial: <strong>admin</strong> · Contraseña: <strong>admin</strong></p>
+</section>
+{% endblock %}

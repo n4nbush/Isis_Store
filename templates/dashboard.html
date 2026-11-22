@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Isis Store{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div><p class="eyebrow">Resumen general</p><h1>Dashboard</h1></div>
+</header>
+<section class="stat-grid">
+  <article class="stat-card"><span>Unidades vendidas</span><strong>{{ totals.units }}</strong></article>
+  <article class="stat-card"><span>Ingresos</span><strong>${{ "%.2f"|format(totals.revenue) }}</strong></article>
+  <article class="stat-card profit"><span>Ganancia</span><strong>${{ "%.2f"|format(totals.profit) }}</strong></article>
+</section>
+<div class="dashboard-grid">
+  <section class="panel">
+    <h2>Prendas más vendidas</h2>
+    <ol class="ranking">
+      {% for product in top_products %}
+      <li><div><strong>{{ product.name }}</strong><span>{{ product.units_sold }} unidades</span></div><b>${{ "%.2f"|format(product.profit) }}</b></li>
+      {% else %}
+      <li class="empty">Todavía no hay ventas.</li>
+      {% endfor %}
+    </ol>
+  </section>
+  <section class="panel">
+    <h2>Últimas ventas</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Prenda</th><th>Cant.</th><th>Total</th><th>Ganancia</th></tr></thead>
+        <tbody>
+          {% for sale in recent_sales %}
+          <tr>
+            <td>{{ sale.product_name }}</td>
+            <td>{{ sale.quantity }}</td>
+            <td>${{ "%.2f"|format(sale.quantity * sale.unit_sale_price) }}</td>
+            <td>${{ "%.2f"|format(sale.quantity * (sale.unit_sale_price - sale.unit_supplier_price)) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="empty">Sin ventas registradas</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

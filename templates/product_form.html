@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Cargar producto | Isis Store{% endblock %}
+{% block content %}
+<section class="form-card">
+  <header><p class="eyebrow">Stock</p><h1>Cargar prenda</h1></header>
+  <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Nombre
+      <input name="name" required>
+    </label>
+    <label>Foto <span>(opcional)</span>
+      <input type="file" name="photo" accept="image/png,image/jpeg,image/gif,image/webp">
+    </label>
+    <div class="form-row">
+      <label>Stock
+        <input type="number" name="stock" min="0" step="1" required>
+      </label>
+      <label>Precio proveedor
+        <input type="number" name="supplier_price" min="0" step="0.01" required>
+      </label>
+      <label>Precio venta
+        <input type="number" name="sale_price" min="0" step="0.01" required>
+      </label>
+    </div>
+    <div class="form-actions">
+      <a class="button secondary" href="{{ url_for('products') }}">Cancelar</a>
+      <button type="submit">Guardar producto</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
