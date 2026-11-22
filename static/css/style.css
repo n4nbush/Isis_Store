@@ -42,6 +42,17 @@ input[type=file] { padding-top:9px; }
 .product-info h2 { margin-bottom:14px; }
 .product-info dl { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
 .product-info dl div { border-top:1px solid var(--line); padding-top:8px; }
+.size-variants { display:grid; gap:12px; }
+.size-variant { padding:12px; border:1px solid var(--line); }
+.size-variant dl { grid-template-columns:repeat(4,1fr); }
+.size-variant .danger { margin-top:12px; }
+.variant-actions { display:flex; align-items:flex-end; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.variant-actions form { margin:0; }
+.add-stock-form { display:flex; align-items:flex-end; gap:8px; }
+.add-stock-form label { width:120px; margin:0; }
+.add-stock-form input { height:40px; }
+.edit-button { height:40px; padding:10px 14px; background:#d8dfd2; color:var(--ink); }
+.current-photo { color:#777; font-size:12px; }
 dt { color:#777; font-size:11px; } dd { margin:4px 0 0; font-weight:bold; }
 .danger { margin-top:16px; background:#b45f55; }
 .form-card { max-width:760px; margin:0 auto; padding:32px; background:#fff; border:1px solid var(--line); }

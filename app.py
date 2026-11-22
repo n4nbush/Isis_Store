@@ -221,8 +221,25 @@ def home():
 @login_required
 def products():
     db = get_db()
-    items = db.execute("SELECT * FROM products ORDER BY name").fetchall()
-    return render_template("products.html", products=items)
+    items = db.execute(
+        "SELECT * FROM products ORDER BY name COLLATE NOCASE, size COLLATE NOCASE"
+    ).fetchall()
+
+    grouped = {}
+    for item in items:
+        name = item["name"]
+        key = name.casefold()
+        if key not in grouped:
+            grouped[key] = {
+                "name": name,
+                "photo": item["photo"],
+                "variants": [],
+            }
+        elif not grouped[key]["photo"] and item["photo"]:
+            grouped[key]["photo"] = item["photo"]
+        grouped[key]["variants"].append(item)
+
+    return render_template("products.html", product_groups=grouped.values())
 
 
 @app.route("/products/new", methods=["GET", "POST"])
@@ -264,6 +281,80 @@ def new_product():
         flash("Producto cargado correctamente.", "success")
         return redirect(url_for("products"))
     return render_template("product_form.html")
+
+
+@app.route("/products/<int:product_id>/edit", methods=["GET", "POST"])
+@admin_required
+def edit_product(product_id):
+    db = get_db()
+    product = db.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+    if product is None:
+        flash("El producto no existe.", "error")
+        return redirect(url_for("products"))
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        size = request.form.get("size", "").strip()
+        stock = request.form.get("stock", "")
+        supplier_price = request.form.get("supplier_price", "")
+        sale_price = request.form.get("sale_price", "")
+        try:
+            stock_value = int(stock)
+            supplier_value = float(supplier_price)
+            sale_value = float(sale_price)
+            if not name or not size or stock_value < 0 or supplier_value < 0 or sale_value < 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            flash("Completá todos los datos con valores válidos.", "error")
+            return redirect(url_for("edit_product", product_id=product_id))
+
+        photo_name = product["photo"]
+        photo = request.files.get("photo")
+        if photo and photo.filename:
+            extension = photo.filename.rsplit(".", 1)[-1].lower()
+            if extension not in ALLOWED_IMAGE_EXTENSIONS:
+                flash("Formato de imagen no permitido.", "error")
+                return redirect(url_for("edit_product", product_id=product_id))
+            photo_name = f"{token_hex(12)}.{extension}"
+            photo.save(os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(photo_name)))
+            if product["photo"]:
+                old_photo = os.path.join(app.config["UPLOAD_FOLDER"], product["photo"])
+                if os.path.isfile(old_photo):
+                    os.remove(old_photo)
+
+        db.execute(
+            "UPDATE products SET name = ?, photo = ?, size = ?, stock = ?, "
+            "supplier_price = ?, sale_price = ? WHERE id = ?",
+            (name, photo_name, size, stock_value, supplier_value, sale_value, product_id),
+        )
+        db.commit()
+        flash("Producto actualizado.", "success")
+        return redirect(url_for("products"))
+
+    return render_template("product_form.html", product=product)
+
+
+@app.post("/products/<int:product_id>/add-stock")
+@admin_required
+def add_stock(product_id):
+    db = get_db()
+    product = db.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+    if product is None:
+        flash("El producto no existe.", "error")
+        return redirect(url_for("products"))
+
+    try:
+        quantity = int(request.form.get("quantity", ""))
+        if quantity <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        flash("Ingresá una cantidad de stock válida.", "error")
+        return redirect(url_for("products"))
+
+    db.execute("UPDATE products SET stock = stock + ? WHERE id = ?", (quantity, product_id))
+    db.commit()
+    flash(f"Se agregaron {quantity} unidades al talle {product['size'] or '-'}.", "success")
+    return redirect(url_for("products"))
 
 
 @app.post("/products/<int:product_id>/delete")

@@ -78,6 +78,74 @@ class IsisStoreTestCase(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_products_with_same_name_are_grouped_by_size(self):
+        self.login()
+        with self.client.session_transaction() as session:
+            session["csrf_token"] = "test-token"
+        for size, stock in (("S", "3"), ("M", "7")):
+            self.client.post(
+                "/products/new",
+                data={
+                    "name": "Remera",
+                    "size": size,
+                    "stock": stock,
+                    "supplier_price": "100",
+                    "sale_price": "180",
+                    "csrf_token": "test-token",
+                },
+            )
+
+        response = self.client.get("/products")
+        self.assertEqual(response.status_code, 200)
+        html = response.data.decode("utf-8")
+        self.assertEqual(html.count("<h2>Remera</h2>"), 1)
+        self.assertIn("Talle</dt><dd>S", html)
+        self.assertIn("Stock</dt><dd>3", html)
+        self.assertIn("Talle</dt><dd>M", html)
+        self.assertIn("Stock</dt><dd>7", html)
+
+    def test_admin_can_add_stock_and_edit_product(self):
+        self.login()
+        with self.client.session_transaction() as session:
+            session["csrf_token"] = "test-token"
+        self.client.post(
+            "/products/new",
+            data={
+                "name": "Pantalon",
+                "size": "L",
+                "stock": "5",
+                "supplier_price": "120",
+                "sale_price": "220",
+                "csrf_token": "test-token",
+            },
+        )
+
+        response = self.client.post(
+            "/products/1/add-stock",
+            data={"quantity": "4", "csrf_token": "test-token"},
+        )
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client.post(
+            "/products/1/edit",
+            data={
+                "name": "Pantalón",
+                "size": "XL",
+                "stock": "9",
+                "supplier_price": "130",
+                "sale_price": "240",
+                "csrf_token": "test-token",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client.get("/products")
+        html = response.data.decode("utf-8")
+        self.assertIn("Pantalón", html)
+        self.assertIn("Talle</dt><dd>XL", html)
+        self.assertIn("Stock</dt><dd>9", html)
+        self.assertIn("$240.00", html)
+
     def test_admin_can_create_and_delete_user(self):
         self.login()
         with self.client.session_transaction() as session:

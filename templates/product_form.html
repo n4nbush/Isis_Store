@@ -1,28 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Cargar producto | Isis Store{% endblock %}
+{% block title %}{{ 'Editar producto' if product else 'Cargar producto' }} | Isis Store{% endblock %}
 {% block content %}
 <section class="form-card">
-  <header><p class="eyebrow">Stock</p><h1>Cargar prenda</h1></header>
+  <header><p class="eyebrow">Stock</p><h1>{{ 'Editar prenda' if product else 'Cargar prenda' }}</h1></header>
   <form method="post" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label>Nombre
-      <input name="name" required>
+      <input name="name" value="{{ product.name if product else '' }}" required>
     </label>
     <label>Talle
-      <input name="size" placeholder="Ej: S, M, L, XL" required>
+      <input name="size" placeholder="Ej: S, M, L, XL" value="{{ product.size if product else '' }}" required>
     </label>
     <label>Foto <span>(opcional)</span>
       <input type="file" name="photo" accept="image/png,image/jpeg,image/gif,image/webp">
     </label>
+    {% if product and product.photo %}
+    <p class="current-photo">Foto actual: {{ product.photo }}</p>
+    {% endif %}
     <div class="form-row">
       <label>Stock
-        <input type="number" name="stock" min="0" step="1" required>
+        <input type="number" name="stock" min="0" step="1" value="{{ product.stock if product else '' }}" required>
       </label>
       <label>Precio proveedor
-        <input type="number" name="supplier_price" min="0" step="0.01" required>
+        <input type="number" name="supplier_price" min="0" step="0.01" value="{{ product.supplier_price if product else '' }}" required>
       </label>
       <label>Precio venta
-        <input type="number" name="sale_price" min="0" step="0.01" required>
+        <input type="number" name="sale_price" min="0" step="0.01" value="{{ product.sale_price if product else '' }}" required>
       </label>
     </div>
     <div class="form-actions">
