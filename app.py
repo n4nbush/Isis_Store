@@ -58,7 +58,7 @@ def init_db():
         );
         CREATE TABLE IF NOT EXISTS sales (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            product_id INTEGER NOT NOT NULL,
+            product_id INTEGER NOT NULL,
             quantity INTEGER NOT NULL CHECK (quantity > 0),
             unit_supplier_price REAL NOT NULL,
             unit_sale_price REAL NOT NULL,
