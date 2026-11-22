@@ -51,6 +51,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             photo TEXT,
+            size TEXT,
             stock INTEGER NOT NULL CHECK (stock >= 0),
             supplier_price REAL NOT NULL CHECK (supplier_price >= 0),
             sale_price REAL NOT NULL CHECK (sale_price >= 0),
@@ -67,6 +68,11 @@ def init_db():
         );
         """
     )
+    product_columns = {
+        row["name"] for row in db.execute("PRAGMA table_info(products)").fetchall()
+    }
+    if "size" not in product_columns:
+        db.execute("ALTER TABLE products ADD COLUMN size TEXT")
     if db.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
         db.execute(
             "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
@@ -144,6 +150,58 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/users", methods=["GET", "POST"])
+@admin_required
+def users():
+    db = get_db()
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        role = request.form.get("role", "user")
+        if not username or not password:
+            flash("Completá el usuario y la contraseña.", "error")
+            return redirect(url_for("users"))
+        if role not in ("admin", "user"):
+            flash("El permiso seleccionado no es válido.", "error")
+            return redirect(url_for("users"))
+        if db.execute("SELECT 1 FROM users WHERE username = ?", (username,)).fetchone():
+            flash("Ya existe un usuario con ese nombre.", "error")
+            return redirect(url_for("users"))
+        db.execute(
+            "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+            (username, generate_password_hash(password), role),
+        )
+        db.commit()
+        flash("Usuario creado correctamente.", "success")
+        return redirect(url_for("users"))
+    items = db.execute("SELECT id, username, role FROM users ORDER BY username").fetchall()
+    return render_template("users.html", users=items)
+
+
+@app.post("/users/<int:user_id>/delete")
+@admin_required
+def delete_user(user_id):
+    db = get_db()
+    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    if user is None:
+        flash("El usuario no existe.", "error")
+        return redirect(url_for("users"))
+    if user["id"] == session["user_id"]:
+        flash("No podés eliminar tu propio usuario.", "error")
+        return redirect(url_for("users"))
+    if user["role"] == "admin":
+        admin_count = db.execute(
+            "SELECT COUNT(*) FROM users WHERE role = 'admin'"
+        ).fetchone()[0]
+        if admin_count <= 1:
+            flash("Debe existir al menos un usuario administrador.", "error")
+            return redirect(url_for("users"))
+    db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    db.commit()
+    flash("Usuario eliminado.", "success")
+    return redirect(url_for("users"))
+
+
 @app.route("/")
 @login_required
 def home():
@@ -172,6 +230,7 @@ def products():
 def new_product():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
+        size = request.form.get("size", "").strip()
         stock = request.form.get("stock", "")
         supplier_price = request.form.get("supplier_price", "")
         sale_price = request.form.get("sale_price", "")
@@ -179,7 +238,7 @@ def new_product():
             stock_value = int(stock)
             supplier_value = float(supplier_price)
             sale_value = float(sale_price)
-            if not name or stock_value < 0 or supplier_value < 0 or sale_value < 0:
+            if not name or not size or stock_value < 0 or supplier_value < 0 or sale_value < 0:
                 raise ValueError
         except (ValueError, TypeError):
             flash("Completá todos los datos con valores válidos.", "error")
@@ -197,9 +256,9 @@ def new_product():
 
         db = get_db()
         db.execute(
-            "INSERT INTO products (name, photo, stock, supplier_price, sale_price, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (name, photo_name, stock_value, supplier_value, sale_value, datetime.now().isoformat()),
+            "INSERT INTO products (name, photo, size, stock, supplier_price, sale_price, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (name, photo_name, size, stock_value, supplier_value, sale_value, datetime.now().isoformat()),
         )
         db.commit()
         flash("Producto cargado correctamente.", "success")

@@ -15,6 +15,9 @@
       <a href="{{ url_for('products') }}">Stock</a>
       <a href="{{ url_for('new_sale') }}">Nueva venta</a>
       <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      {% if session.role == 'admin' %}
+      <a href="{{ url_for('users') }}">Usuarios</a>
+      {% endif %}
       <form action="{{ url_for('logout') }}" method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button class="link-button" type="submit">Salir</button>

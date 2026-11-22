@@ -18,6 +18,7 @@
     <div class="product-info">
       <h2>{{ product.name }}</h2>
       <dl>
+        <div><dt>Talle</dt><dd>{{ product.size or '-' }}</dd></div>
         <div><dt>Stock</dt><dd>{{ product.stock }}</dd></div>
         <div><dt>Proveedor</dt><dd>${{ "%.2f"|format(product.supplier_price) }}</dd></div>
         <div><dt>Venta</dt><dd>${{ "%.2f"|format(product.sale_price) }}</dd></div>

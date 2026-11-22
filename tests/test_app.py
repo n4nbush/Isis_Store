@@ -41,6 +41,7 @@ class IsisStoreTestCase(unittest.TestCase):
             "/products/new",
             data={
                 "name": "Remera",
+                "size": "M",
                 "stock": "10",
                 "supplier_price": "100",
                 "sale_price": "180",
@@ -48,6 +49,8 @@ class IsisStoreTestCase(unittest.TestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
+        response = self.client.get("/products")
+        self.assertIn(b"M", response.data)
         response = self.client.post(
             "/sales/new",
             data={"product_id": "1", "quantity": "3", "csrf_token": "test-token"},
@@ -63,6 +66,7 @@ class IsisStoreTestCase(unittest.TestCase):
             "/products/new",
             data={
                 "name": "Camisa",
+                "size": "S",
                 "stock": "4",
                 "supplier_price": "50",
                 "sale_price": "90",
@@ -71,6 +75,27 @@ class IsisStoreTestCase(unittest.TestCase):
         )
         response = self.client.post(
             "/products/1/delete", data={"csrf_token": "test-token"}
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_admin_can_create_and_delete_user(self):
+        self.login()
+        with self.client.session_transaction() as session:
+            session["csrf_token"] = "test-token"
+        response = self.client.post(
+            "/users",
+            data={
+                "username": "vendedor",
+                "password": "secreto",
+                "role": "user",
+                "csrf_token": "test-token",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get("/users")
+        self.assertIn(b"vendedor", response.data)
+        response = self.client.post(
+            "/users/2/delete", data={"csrf_token": "test-token"}
         )
         self.assertEqual(response.status_code, 302)
 
