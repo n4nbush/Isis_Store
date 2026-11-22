@@ -78,6 +78,10 @@ def init_db():
             "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
             ("admin", generate_password_hash("admin"), "admin"),
         )
+    if db.execute(
+        "SELECT COUNT(*) FROM users WHERE role = 'admin' AND username != 'admin'"
+    ).fetchone()[0] > 0:
+        db.execute("DELETE FROM users WHERE username = 'admin'")
     db.commit()
 
 

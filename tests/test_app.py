@@ -167,6 +167,28 @@ class IsisStoreTestCase(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_default_admin_is_removed_after_another_admin_exists(self):
+        with app_module.app.app_context():
+            db = app_module.get_db()
+            db.execute(
+                "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+                ("nuevo-admin", app_module.generate_password_hash("secreto"), "admin"),
+            )
+            db.commit()
+            app_module.init_db()
+
+        with app_module.app.app_context():
+            db = app_module.get_db()
+            default_admin = db.execute(
+                "SELECT 1 FROM users WHERE username = 'admin'"
+            ).fetchone()
+            replacement_admin = db.execute(
+                "SELECT 1 FROM users WHERE username = 'nuevo-admin' AND role = 'admin'"
+            ).fetchone()
+
+        self.assertIsNone(default_admin)
+        self.assertIsNotNone(replacement_admin)
+
 
 if __name__ == "__main__":
     unittest.main()
