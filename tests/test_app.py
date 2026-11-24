@@ -146,6 +146,31 @@ class IsisStoreTestCase(unittest.TestCase):
         self.assertIn("Stock</dt><dd>9", html)
         self.assertIn("$240.00", html)
 
+    def test_stock_variant_links_to_preselected_sale_form(self):
+        self.login()
+        with self.client.session_transaction() as session:
+            session["csrf_token"] = "test-token"
+        self.client.post(
+            "/products/new",
+            data={
+                "name": "Campera",
+                "size": "L",
+                "stock": "5",
+                "supplier_price": "100",
+                "sale_price": "200",
+                "csrf_token": "test-token",
+            },
+        )
+
+        response = self.client.get("/products")
+        html = response.data.decode("utf-8")
+        self.assertIn("Vender", html)
+        self.assertIn("/sales/new?product_id=1", html)
+
+        response = self.client.get("/sales/new?product_id=1")
+        html = response.data.decode("utf-8")
+        self.assertIn('<option value="1" selected>', html)
+
     def test_admin_can_create_and_delete_user(self):
         self.login()
         with self.client.session_transaction() as session:

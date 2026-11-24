@@ -385,6 +385,14 @@ def delete_product(product_id):
 def new_sale():
     db = get_db()
     products = db.execute("SELECT * FROM products WHERE stock > 0 ORDER BY name").fetchall()
+    selected_product_id = None
+    if request.method == "GET":
+        try:
+            selected_product_id = int(request.args.get("product_id", ""))
+        except (ValueError, TypeError):
+            selected_product_id = None
+        if selected_product_id not in {product["id"] for product in products}:
+            selected_product_id = None
     if request.method == "POST":
         try:
             product_id = int(request.form.get("product_id", ""))
@@ -410,7 +418,11 @@ def new_sale():
             db.commit()
             flash("Venta registrada.", "success")
             return redirect(url_for("home"))
-    return render_template("sale_form.html", products=products)
+    return render_template(
+        "sale_form.html",
+        products=products,
+        selected_product_id=selected_product_id,
+    )
 
 
 @app.route("/dashboard")

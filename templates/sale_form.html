@@ -10,7 +10,7 @@
       <select name="product_id" required>
         <option value="">Seleccionar...</option>
         {% for product in products %}
-        <option value="{{ product.id }}">{{ product.name }} — Talle {{ product.size or '-' }} — Stock: {{ product.stock }} — ${{ "%.2f"|format(product.sale_price) }}</option>
+        <option value="{{ product.id }}"{% if selected_product_id == product.id %} selected{% endif %}>{{ product.name }} — Talle {{ product.size or '-' }} — Stock: {{ product.stock }} — ${{ "%.2f"|format(product.sale_price) }}</option>
         {% endfor %}
       </select>
     </label>

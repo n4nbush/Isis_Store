@@ -26,6 +26,11 @@
             <div><dt>Proveedor</dt><dd>${{ "%.2f"|format(product.supplier_price) }}</dd></div>
             <div><dt>Venta</dt><dd>${{ "%.2f"|format(product.sale_price) }}</dd></div>
           </dl>
+          {% if product.stock > 0 %}
+          <div class="sell-action">
+            <a class="button sell-button" href="{{ url_for('new_sale', product_id=product.id) }}">Vender</a>
+          </div>
+          {% endif %}
           {% if session.role == 'admin' %}
           <div class="variant-actions">
             <form class="add-stock-form" method="post" action="{{ url_for('add_stock', product_id=product.id) }}">
